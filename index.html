@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mock Test - Tools & Safety</title>
+  <style>
+    body { font-family: Arial; background: #f4f4f4; padding: 20px; }
+    .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #aaa; }
+    .question { margin-bottom: 10px; font-weight: bold; }
+    .options button {
+      display: block; width: 100%; margin: 5px 0; padding: 10px;
+      border: 1px solid #ccc; border-radius: 5px; cursor: pointer; background: #eee;
+    }
+    .options button.correct { background: #d4edda; color: #155724; }
+    .options button.wrong { background: #f8d7da; color: #721c24; }
+    #timer { font-weight: bold; margin-bottom: 20px; text-align: right; }
+    #result { font-size: 18px; font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="timer">समय: 25:00</div>
+    <div id="quiz"></div>
+    <div id="result"></div>
+  </div>
+<script>
+// JSON DATA PASTE BELOW:
+const quizData = __PASTE_JSON_HERE__;
+
+let current = 0, score = 0, answered = false, timer;
+let totalTime = 25 * 60;
+
+function startTimer() {
+  timer = setInterval(() => {
+    const minutes = Math.floor(totalTime / 60);
+    const seconds = totalTime % 60;
+    document.getElementById("timer").innerText = `समय: ${minutes}:${seconds.toString().padStart(2,'0')}`;
+    totalTime--;
+    if (totalTime < 0) {
+      clearInterval(timer);
+      endQuiz();
+    }
+  }, 1000);
+}
+
+function loadQuestion() {
+  answered = false;
+  const q = quizData[current];
+  const quiz = document.getElementById("quiz");
+  quiz.innerHTML = `<div class='question'>Q${current+1}. ${q.q}</div>`;
+  const options = document.createElement("div");
+  options.classList.add("options");
+  q.opt.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.innerText = opt;
+    btn.onclick = () => checkAnswer(btn, opt === q.ans);
+    options.appendChild(btn);
+  });
+  quiz.appendChild(options);
+}
+
+function checkAnswer(button, isCorrect) {
+  if (answered) return;
+  answered = true;
+  const buttons = document.querySelectorAll(".options button");
+  buttons.forEach(btn => {
+    btn.disabled = true;
+    if (btn.innerText === quizData[current].ans) {
+      btn.classList.add("correct");
+    } else if (btn === button && !isCorrect) {
+      btn.classList.add("wrong");
+    }
+  });
+  if (isCorrect) score++;
+  setTimeout(() => {
+    current++;
+    if (current < quizData.length) loadQuestion();
+    else endQuiz();
+  }, 1000);
+}
+
+function endQuiz() {
+  document.getElementById("quiz").innerHTML = "<h3>Test समाप्त हुआ!</h3>";
+  document.getElementById("result").innerText = `आपका स्कोर: ${score}/${quizData.length}`;
+}
+
+startTimer();
+loadQuestion();
+</script>
+</body>
+</html>
